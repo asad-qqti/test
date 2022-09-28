@@ -1,0 +1,32 @@
+name: reviewdog
+on: [pull_request]
+jobs:
+
+  precheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+    - name: Check formatability
+      run: | 
+        # install black 
+        pip install black
+        # Error out if black is unable to format for some reason
+        black . --check
+        
+    
+  review-pr-black:
+    needs: precheck
+    name: Enforce Black w Review Dog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-black@v2
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: warning
